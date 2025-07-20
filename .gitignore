@@ -1,0 +1,15 @@
+# Node.js
+node_modules/
+
+# TypeScript build output
+dist/
+build/
+
+# AWS Lambda deployment package
+lambda.zip
+
+# Optional: IDE/editor files
+.DS_Store
+*.log
+.vscode/
+.idea/

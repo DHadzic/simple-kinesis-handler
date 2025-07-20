@@ -46,6 +46,14 @@ npm start
 
 This command will process sample events from the `src/data/events.json` file through the handler.
 
+## Testing
+
+Run the Jest test suite:
+
+```bash
+npm test
+```
+
 ## Features
 
 - Event-driven architecture for processing user limit events

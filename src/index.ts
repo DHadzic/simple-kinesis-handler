@@ -4,6 +4,8 @@ import { EventData } from './types/events';
 import { handler } from './handler';
 import { Callback, Context, KinesisStreamEvent, KinesisStreamRecord } from 'aws-lambda';
 
+process.env.RUN_MODE = 'local'; // Set RUN_MODE to local for demo
+
 const filePath = join(__dirname, 'data', 'events.json');
 const jsonData = readFileSync(filePath, 'utf-8');
 

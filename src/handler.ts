@@ -22,7 +22,12 @@ export const handler: KinesisStreamHandler = async (event) => {
       parsed = JSON.parse(json);
     } catch {
       logger.error('Invalid JSON:', json);
-      // Able to return single record since we're working with streams
+
+      if (process.env.RUN_MODE === 'local') {
+        continue;
+      }
+
+      // In local mode, we can return the failed record for easier debugging.
       return { batchItemFailures: [{ itemIdentifier: record.kinesis.sequenceNumber }] };
     }
 
@@ -35,7 +40,18 @@ export const handler: KinesisStreamHandler = async (event) => {
       continue;
     }
 
-    handler(payload);
+    try {
+      handler(payload);
+    } catch (error) {
+      logger.error('There was an error while processing record:', (error as Error).message);
+
+      if (process.env.RUN_MODE === 'local') {
+        continue;
+      }
+
+      // Able to return single record since we're working with streams. Commented out for local testing.
+      return { batchItemFailures: [{ itemIdentifier: record.kinesis.sequenceNumber }] };
+    }
   }
 
   return { batchItemFailures: [] };

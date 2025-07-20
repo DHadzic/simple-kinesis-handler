@@ -9,5 +9,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": ["src/index.ts"]
+  "exclude": ["node_modules", "test/**/*.test.ts", "test/__mocks__"],
 }

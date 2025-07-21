@@ -1,6 +1,28 @@
-# AWS Kinesis Event Handler Assignment
+# Simple AWS Lambda handler for AWS Kinesis Event Stream
 
-A simple TypeScript implementation for processing AWS Kinesis Stream events
+A simple AWS Lambda implementation for processing AWS Kinesis Stream events
+
+## Table of Contents
+
+- [Overview](#overview)
+  - [Supported Event Types](#supported-event-types)
+  - [Technical Implementation](#technical-implementation)
+- [Technologies Used](#technologies-used)
+- [Structure](#structure)
+- [Setup and Installation](#setup-and-installation)
+- [Running the Project](#running-the-project)
+- [Testing](#testing)
+- [Features](#features)
+- [Storage Configuration](#storage-configuration)
+- [Docker Deployment](#docker-deployment)
+  - [Building the Docker Image](#building-the-docker-image)
+  - [Running the Container Locally](#running-the-container-locally)
+  - [Deploying to AWS Lambda Container Registry](#deploying-to-aws-lambda-container-registry)
+- [CLI Deployment](#cli-deployment)
+  - [Creating Lambda Deployment Package](#creating-lambda-deployment-package)
+  - [AWS Lambda Deployment (via AWS CLI)](#aws-lambda-deployment-via-aws-cli)
+  - [Configuring Kinesis as Event Source](#configuring-kinesis-as-event-source)
+- [Questions and Answers](#questions-and-answers)
 
 ## Overview
 
@@ -17,12 +39,12 @@ The handler processes three main types of events:
 ### Technical Implementation
 
 The solution demonstrates:
-- Modular design with separate handlers for different event types
-- Flexible storage options (in-memory for testing, DynamoDB for production)
+- Design with separate handlers for different event types
+- Flexible storage options
 - Container-ready deployment for AWS Lambda
 - CLI Deployment for AWS Lambda
-- Comprehensive error handling and batch failure reporting
-- Unit and integration tests with Jest
+- Error handling and failure upon invalid event processing
+- Unit tests with Jest
 
 ## Technologies Used
 
@@ -183,3 +205,75 @@ aws lambda create-event-source-mapping \
   --batch-size 100 \
   --starting-position LATEST
 ```
+
+## Questions and Answers
+
+### 1. What did you like about the task and what didn't? Can we improve it and how?
+
+**What I liked:**
+- It's realistic and practical. The solution can be deployed into a real system.
+- The task seems trivial at first glance, but can be covered in-depth:
+  - Various ways to deploy
+  - Various ways to handle potential failures
+
+**What could be improved:**
+- More clarity around the acceptance criteria:
+  - What should be tested (input data that validates the solution)
+  - How should the solution behave in specific scenarios (invalid event data, unregistered event type)
+  - What is the business logic behind these events
+    - Is one user limit always bound to a single currency
+    - How do we calculate progress
+    - Does remaining amount affect calculation of the progress
+- Include schemas for the event structure for easier understanding of event payload
+- Examples with processing a couple of events in sequence
+
+### 2. If you were asked to change it so the UserLimit entries are stored on a database with a primary goal to provide them back to the front-end for display, which one would you suggest and why? What sub-tasks would you see as necessary if you were asked to write a story for such a change?
+
+Amazon DynamoDB would be a strong choice:
+- Different event type payloads fit well into a single document structure
+- Fast reads which is important for front-end applications
+- Highly scalable and well-suited for this use case
+- Supports stream triggers, which works well with event-driven architecture
+- Well integrated with Lambda functions
+
+A generic approach is already in place; we just need to refine it to suit the entity and provide proper DynamoDB configuration to AWS Lambda.
+
+**Sub-tasks for the story:**
+- Replace DynamoStorage with a repository interface (UserLimitRepository)
+  - Make it specific to the entity
+- Investigate a way to provide data to AWS Lambda (credentials might be accessible via IAM role)
+- Refactor DynamoDB environment variables and test their passing to AWS Lambda function
+- Add indexes for efficient querying by userId
+
+### 3. What would you suggest for an API to return this data to the front-end for a user? What would be the API signature?
+
+**REST API suggestion:**
+
+- `GET /user-limits/:userId`
+
+**Response example:**
+
+```json
+{
+  "userId": "userId",
+  "currencyCode": "SEK",
+  "progress": "100",
+  "value": "100",
+  "status": "ACTIVE",
+  "period": "DAY",
+}
+```
+
+### 4. How did/could you implement it so it's possible to re-use it for other similar use cases?
+
+**Storage:**
+- There's already an implementation of AbstractStorage that we work with. There are two implementations of this class - DynamoStorage and MapStorage. For further expansion, there should be a StorageFactory that, based on specific conditions, provides an instance of the AbstractStorage to work with.
+
+**Additional event types:**
+- For each new event type that needs a handler, the following should be done:
+  - Addition of that specific event type to the eventTypes enumeration
+  - Creation of a new handler function in `/src/handlers/`
+  - Addition of the handler to the map in `/handler.ts`. The key is the enum value of the event type, and the value is the new handler function
+  - Tests for the newly introduced handler in `/test/handlers/`
+
+This could be improved with a class-based EventProcessor rather than a simple map definition for more complex systems.

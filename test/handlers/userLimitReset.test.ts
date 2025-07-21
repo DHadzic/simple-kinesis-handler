@@ -27,13 +27,13 @@ describe('handlerUserLimitReset', () => {
     jest.clearAllMocks();
   });
 
-  test('should reset user limit progress', () => {
+  test('should reset user limit progress', async () => {
     const RESET_PROGRESS_VALUE = '0';
 
     mockStorage.has.mockReturnValue(true);
     mockStorage.get.mockReturnValue(mockUserLimit);
 
-    handlerUserLimitReset(mockUserLimitResetPayload);
+    await handlerUserLimitReset(mockUserLimitResetPayload);
 
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitResetPayload.userId);
     expect(mockStorage.get).toHaveBeenCalledWith(mockUserLimitResetPayload.userId);
@@ -46,10 +46,10 @@ describe('handlerUserLimitReset', () => {
     expect(mockLogger.info).toHaveBeenCalled();
   });
 
-  test('should throw error if user limit does not exist', () => {
+  test('should throw error if user limit does not exist', async () => {
     mockStorage.has.mockReturnValue(false);
 
-    expect(() => handlerUserLimitReset(mockUserLimitResetPayload)).toThrow(
+    await expect(handlerUserLimitReset(mockUserLimitResetPayload)).rejects.toThrow(
       `Failed to reset user limit progress. User limit does not exist for user id: ${mockUserLimitResetPayload.userId}`
     );
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitResetPayload.userId);
@@ -57,14 +57,14 @@ describe('handlerUserLimitReset', () => {
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if payload validation fails', () => {
+  test('should throw error if payload validation fails', async () => {
     const VALIDATION_INPUT_LABEL = 'Invalid input';
     const VALIDATION_OPTION_LABEL = 'Invalid option';
     const TOTAL_FIELDS = 10;
     let validationFails = 0;
 
     try {
-      handlerUserLimitReset({} as unknown as EventPayload);
+      await handlerUserLimitReset({} as unknown as EventPayload);
     } catch (err) {
       validationFails = (err as Error).message.split(VALIDATION_INPUT_LABEL).length - 1;
       validationFails += (err as Error).message.split(VALIDATION_OPTION_LABEL).length - 1;
@@ -75,14 +75,14 @@ describe('handlerUserLimitReset', () => {
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if payload validation fails', () => {
+  test('should throw error if payload validation fails', async () => {
     const VALIDATION_INPUT_LABEL = 'Invalid input';
     const VALIDATION_OPTION_LABEL = 'Invalid option';
     const TOTAL_FIELDS = 10;
     let validationFails = 0;
 
     try {
-      handlerUserLimitReset({} as unknown as EventPayload);
+      await handlerUserLimitReset({} as unknown as EventPayload);
     } catch (err) {
       validationFails = (err as Error).message.split(VALIDATION_INPUT_LABEL).length - 1;
       validationFails += (err as Error).message.split(VALIDATION_OPTION_LABEL).length - 1;

@@ -27,11 +27,11 @@ describe('handlerUserLimitProgressChanged', () => {
     jest.clearAllMocks();
   });
 
-  test('should update user limit progress', () => {
+  test('should update user limit progress', async () => {
     mockStorage.has.mockReturnValue(true);
     mockStorage.get.mockReturnValue(mockUserLimit);
 
-    handlerUserLimitProgressChanged(mockUserLimitProgressChangedPayload);
+    await handlerUserLimitProgressChanged(mockUserLimitProgressChangedPayload);
 
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitProgressChangedPayload.userId);
     expect(mockStorage.get).toHaveBeenCalledWith(mockUserLimitProgressChangedPayload.userId);
@@ -44,10 +44,12 @@ describe('handlerUserLimitProgressChanged', () => {
     expect(mockLogger.info).toHaveBeenCalled();
   });
 
-  test('should throw error if user limit does not exist', () => {
+  test('should throw error if user limit does not exist', async () => {
     mockStorage.has.mockReturnValue(false);
 
-    expect(() => handlerUserLimitProgressChanged(mockUserLimitProgressChangedPayload)).toThrow(
+    await expect(
+      handlerUserLimitProgressChanged(mockUserLimitProgressChangedPayload)
+    ).rejects.toThrow(
       `Failed to change user limit progress. User limit does not exist for user id: ${mockUserLimitProgressChangedPayload.userId}`
     );
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitProgressChangedPayload.userId);
@@ -55,7 +57,7 @@ describe('handlerUserLimitProgressChanged', () => {
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if amount is a non-number', () => {
+  test('should throw error if amount is a non-number', async () => {
     mockStorage.has.mockReturnValue(true);
     mockStorage.get.mockReturnValue(mockUserLimit);
 
@@ -64,7 +66,7 @@ describe('handlerUserLimitProgressChanged', () => {
       amount: 'invalid',
     };
 
-    expect(() => handlerUserLimitProgressChanged(invalidPayload)).toThrow(
+    await expect(handlerUserLimitProgressChanged(invalidPayload)).rejects.toThrow(
       'User Limit property < amount > is not a positive number'
     );
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitProgressChangedPayload.userId);
@@ -72,7 +74,7 @@ describe('handlerUserLimitProgressChanged', () => {
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if amount is a  negative number', () => {
+  test('should throw error if amount is a  negative number', async () => {
     mockStorage.has.mockReturnValue(true);
     mockStorage.get.mockReturnValue(mockUserLimit);
 
@@ -81,7 +83,7 @@ describe('handlerUserLimitProgressChanged', () => {
       amount: '-100',
     };
 
-    expect(() => handlerUserLimitProgressChanged(invalidPayload)).toThrow(
+    await expect(handlerUserLimitProgressChanged(invalidPayload)).rejects.toThrow(
       'User Limit property < amount > is not a positive number'
     );
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitProgressChangedPayload.userId);
@@ -89,7 +91,7 @@ describe('handlerUserLimitProgressChanged', () => {
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if previousProgress is a non-number', () => {
+  test('should throw error if previousProgress is a non-number', async () => {
     mockStorage.has.mockReturnValue(true);
     mockStorage.get.mockReturnValue(mockUserLimit);
 
@@ -98,7 +100,7 @@ describe('handlerUserLimitProgressChanged', () => {
       previousProgress: 'invalid',
     };
 
-    expect(() => handlerUserLimitProgressChanged(invalidPayload)).toThrow(
+    await expect(() => handlerUserLimitProgressChanged(invalidPayload)).rejects.toThrow(
       'User Limit property < previousProgress > is not a positive number'
     );
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitProgressChangedPayload.userId);
@@ -106,7 +108,7 @@ describe('handlerUserLimitProgressChanged', () => {
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if previousProgress is a negative number', () => {
+  test('should throw error if previousProgress is a negative number', async () => {
     mockStorage.has.mockReturnValue(true);
     mockStorage.get.mockReturnValue(mockUserLimit);
 
@@ -115,7 +117,7 @@ describe('handlerUserLimitProgressChanged', () => {
       previousProgress: '-100',
     };
 
-    expect(() => handlerUserLimitProgressChanged(invalidPayload)).toThrow(
+    await expect(handlerUserLimitProgressChanged(invalidPayload)).rejects.toThrow(
       'User Limit property < previousProgress > is not a positive number'
     );
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitProgressChangedPayload.userId);
@@ -123,13 +125,13 @@ describe('handlerUserLimitProgressChanged', () => {
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if payload validation fails', () => {
+  test('should throw error if payload validation fails', async () => {
     const VALIDATION_INPUT_LABEL = 'Invalid input';
     const TOTAL_FIELDS = 8;
     let validationFails = 0;
 
     try {
-      handlerUserLimitProgressChanged({} as unknown as EventPayload);
+      await handlerUserLimitProgressChanged({} as unknown as EventPayload);
     } catch (err) {
       validationFails = (err as Error).message.split(VALIDATION_INPUT_LABEL).length - 1;
     }

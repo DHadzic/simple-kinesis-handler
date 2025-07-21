@@ -1,19 +1,25 @@
 import { logger, storage } from '../common/common';
 import { EventPayload, UserLimitResetPayload, UserLimitResetPayloadSchema } from '../types/events';
-import { UserLimit } from '../types/user-limit';
 
-export const handlerUserLimitReset = (rawPayload: EventPayload) => {
+class UserLimitResetError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UserLimitResetError';
+  }
+}
+
+export const handlerUserLimitReset = async (rawPayload: EventPayload) => {
   const payload: UserLimitResetPayload = UserLimitResetPayloadSchema.parse(rawPayload);
 
-  if (!storage.has(payload.userId)) {
-    throw new Error(
+  if (!(await storage.has(payload.userId))) {
+    throw new UserLimitResetError(
       `Failed to reset user limit progress. User limit does not exist for user id: ${payload.userId}`
     );
   }
 
-  const userLimit = storage.get(payload.userId)! as UserLimit;
+  const userLimit = await storage.get(payload.userId);
   userLimit.progress = '0';
 
-  storage.set(payload.userId, userLimit);
+  await storage.set(payload.userId, userLimit);
   logger.info('[INFO] User limit reset:', payload.userId);
 };

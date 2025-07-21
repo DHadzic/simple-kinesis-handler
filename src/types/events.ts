@@ -11,10 +11,7 @@ export type EventType = `${eventTypes}`;
 
 export const EventPayloadSchema = z.object({
   brandId: z.string(),
-  currencyCode: z.string(),
-  nextResetTime: z.number(),
   userId: z.string(),
-  userLimitId: z.string(),
 });
 export type EventPayload = z.infer<typeof EventPayloadSchema>;
 
@@ -24,6 +21,9 @@ export const UserLimitCreatedPayloadSchema = EventPayloadSchema.extend({
   status: z.enum(LimitStatus),
   type: z.enum(LimitType),
   value: z.string(),
+  currencyCode: z.string(),
+  nextResetTime: z.number(),
+  userLimitId: z.string(),
 });
 
 export type UserLimitCreatedPayload = z.infer<typeof UserLimitCreatedPayloadSchema>;
@@ -32,6 +32,9 @@ export const UserLimitProgressChangedPayloadSchema = EventPayloadSchema.extend({
   amount: z.string(),
   previousProgress: z.string(),
   remainingAmount: z.string(),
+  currencyCode: z.string(),
+  nextResetTime: z.number(),
+  userLimitId: z.string(),
 });
 export type UserLimitProgressChangedPayload = z.infer<typeof UserLimitProgressChangedPayloadSchema>;
 
@@ -41,6 +44,9 @@ export const UserLimitResetPayloadSchema = EventPayloadSchema.extend({
   resetPercentage: z.string(),
   type: z.enum(LimitType),
   unusedAmount: z.string(),
+  currencyCode: z.string(),
+  nextResetTime: z.number(),
+  userLimitId: z.string(),
 });
 export type UserLimitResetPayload = z.infer<typeof UserLimitResetPayloadSchema>;
 

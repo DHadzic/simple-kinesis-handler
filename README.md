@@ -4,17 +4,32 @@ A simple TypeScript implementation for processing AWS Kinesis Stream events
 
 ## Overview
 
-This project demonstrates a custom AWS Kinesis event handler that processes three main event types:
+This project implements a robust AWS Lambda function that processes events from an AWS Kinesis data stream. It's designed to handle user limit-related events for a gaming or betting platform.
 
-- User Limit Created
-- User Limit Progress Changed
-- User Limit Reset
+### Supported Event Types
+
+The handler processes three main types of events:
+
+- **User Limit Created**: When a new spending/betting limit is established for a user
+- **User Limit Progress Changed**: When a user's activity affects their progress
+- **User Limit Reset**: When a user's limit is reset
+
+### Technical Implementation
+
+The solution demonstrates:
+- Modular design with separate handlers for different event types
+- Flexible storage options (in-memory for testing, DynamoDB for production)
+- Container-ready deployment for AWS Lambda
+- CLI Deployment for AWS Lambda
+- Comprehensive error handling and batch failure reporting
+- Unit and integration tests with Jest
 
 ## Technologies Used
 
 - TypeScript
 - AWS Lambda
 - AWS Kinesis
+- Docker
 
 ## Structure
 
@@ -26,6 +41,9 @@ This project demonstrates a custom AWS Kinesis event handler that processes thre
 │   ├── types/        # TypeScript type definitions
 │   ├── handler.ts    # Lambda handler
 │   └── index.ts      # Entry point for local demo execution
+├── test/             # Test files and fixtures
+├── Dockerfile        # Docker configuration for Lambda container
+├── .dockerignore     # Files to exclude from Docker builds
 ├── tsconfig.json     # TypeScript configuration
 └── package.json      # Project dependencies
 ```
@@ -60,7 +78,64 @@ npm test
 - In-memory storage for demonstration purposes
 - Creation of `lambda.zip` file via script
 
-## Deployment
+## Storage Configuration
+
+The application supports two storage types:
+- In-memory storage (default)
+- DynamoDB storage
+
+Set the storage type using environment variables:
+
+```
+ENABLE_DYNAMO_DB=true
+
+# AWS Configuration for DynamoDB
+AWS_REGION=
+AWS_TABLE_NAME=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+```
+
+## Docker Deployment
+
+This project includes Docker support for containerized deployment to AWS Lambda.
+
+### Building the Docker Image
+
+```bash
+docker build -t kinesis-handler .
+```
+
+The Docker build process:
+1. Uses AWS Lambda base image for Node.js 20
+4. Creates a container ready for AWS Lambda deployment
+
+### Running the Container Locally
+
+```bash
+docker run -p 9000:8080 custom-kinesis-handler
+```
+
+You can test your Lambda function using the following:
+
+```bash
+# Invoke the function with test data
+curl "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{...}'
+```
+
+### Deploying to AWS Lambda Container Registry
+
+```bash
+# Tag the image for your ECR repository
+docker tag kinesis-handler:latest $AWS_ECR_REPOSITORY_URI/kinesis-handler:latest
+
+# Push to ECR
+docker push $AWS_ECR_REPOSITORY_URI/kinesis-handler:latest
+```
+
+Then deploy your Lambda function using the container image URI.
+
+## CLI Deployment
 
 ### Creating Lambda Deployment Package
 

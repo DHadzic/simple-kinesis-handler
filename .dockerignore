@@ -1,0 +1,26 @@
+node_modules/
+
+.git/
+.gitignore
+
+# TypeScript build output
+dist/
+build/
+
+# AWS Lambda deployment package
+lambda.zip
+
+.vscode/
+.idea/
+
+.env
+!.env.example
+
+# Test files
+test/
+*.test.ts
+jest.config.*
+
+# Local development files
+.DS_Store
+tmp/

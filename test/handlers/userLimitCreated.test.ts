@@ -27,10 +27,10 @@ describe('handlerUserLimitCreated', () => {
     jest.clearAllMocks();
   });
 
-  test('should successfully create a user limit', () => {
+  test('should successfully create a user limit', async () => {
     mockStorage.has.mockReturnValue(false);
 
-    handlerUserLimitCreated(mockUserLimitCreatedPayload);
+    await handlerUserLimitCreated(mockUserLimitCreatedPayload);
 
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitCreatedPayload.userId);
     expect(mockStorage.set).toHaveBeenCalledWith(
@@ -46,24 +46,24 @@ describe('handlerUserLimitCreated', () => {
     );
   });
 
-  test('should throw error if user limit already exists', () => {
+  test('should throw error if user limit already exists', async () => {
     mockStorage.has.mockReturnValue(true);
 
-    expect(() => handlerUserLimitCreated(mockUserLimitCreatedPayload)).toThrow(
+    await expect(handlerUserLimitCreated(mockUserLimitCreatedPayload)).rejects.toThrow(
       `Failed to create user limit. User limit already exists for user id: ${mockUserLimitCreatedPayload.userId}`
     );
     expect(mockStorage.has).toHaveBeenCalledWith(mockUserLimitCreatedPayload.userId);
     expect(mockStorage.set).not.toHaveBeenCalled();
   });
 
-  test('should throw error if payload validation fails', () => {
+  test('should throw error if payload validation fails', async () => {
     const VALIDATION_INPUT_LABEL = 'Invalid input';
     const VALIDATION_OPTION_LABEL = 'Invalid option';
     const TOTAL_FIELDS = 10;
     let validationFails = 0;
 
     try {
-      handlerUserLimitCreated({} as unknown as EventPayload);
+      await handlerUserLimitCreated({} as unknown as EventPayload);
     } catch (err) {
       validationFails = (err as Error).message.split(VALIDATION_INPUT_LABEL).length - 1;
       validationFails += (err as Error).message.split(VALIDATION_OPTION_LABEL).length - 1;

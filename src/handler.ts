@@ -4,8 +4,9 @@ import { handlerUserLimitReset } from './handlers/userLimitReset';
 import { handlerUserLimitCreated } from './handlers/userLimitCreated';
 import { handlerUserLimitProgressChanged } from './handlers/userLimitProgressChanged';
 import { logger } from './common/common';
+import 'dotenv/config';
 
-type EventHandlerFn = (payload: EventPayload) => void;
+type EventHandlerFn = (payload: EventPayload) => Promise<void>;
 
 export const handler: KinesisStreamHandler = async (event) => {
   const handlers: Record<EventType, EventHandlerFn> = {
@@ -27,7 +28,7 @@ export const handler: KinesisStreamHandler = async (event) => {
         continue;
       }
 
-      // In local mode, we can return the failed record for easier debugging.
+      // Able to return single record since we're working with streams. Not required for local testing.
       return { batchItemFailures: [{ itemIdentifier: record.kinesis.sequenceNumber }] };
     }
 
@@ -41,7 +42,7 @@ export const handler: KinesisStreamHandler = async (event) => {
     }
 
     try {
-      handler(payload);
+      await handler(payload);
     } catch (error) {
       logger.error('There was an error while processing record:', (error as Error).message);
 
@@ -49,7 +50,7 @@ export const handler: KinesisStreamHandler = async (event) => {
         continue;
       }
 
-      // Able to return single record since we're working with streams. Commented out for local testing.
+      // Able to return single record since we're working with streams. Not required for local testing.
       return { batchItemFailures: [{ itemIdentifier: record.kinesis.sequenceNumber }] };
     }
   }
